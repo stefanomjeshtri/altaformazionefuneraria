@@ -1,0 +1,59 @@
+name: Patch hero kicker size
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Refine hero kicker size
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          html = html.replace(
+              '<div class="kicker">Formazione funeraria</div>',
+              '<div class="kicker hero-kicker">Formazione funeraria</div>',
+              1
+          )
+
+          new_css = '''  .hero-kicker{
+    margin-top: 22px !important;
+    margin-bottom: 18px !important;
+    font-size: 12px !important;
+    letter-spacing: .20em !important;
+    line-height: 1.2 !important;
+  }
+'''
+
+          if '.hero-kicker{' in html:
+              html = re.sub(r'  \.hero-kicker\{.*?\n  \}\n', new_css, html, count=1, flags=re.S)
+          else:
+              marker = '</style>\n\n</head>'
+              html = html.replace(marker, new_css + marker, 1)
+
+          path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Refine hero kicker size"
+            git push
+          fi
