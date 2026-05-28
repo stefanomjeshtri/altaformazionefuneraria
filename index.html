@@ -191,12 +191,29 @@ body, h1, h2, h3, h4, h5, h6, p, a, button, li {
     display: none !important;
   }
   
-.logo.logo-image img{
-  width: 100% !important;
-  height: auto !important;
-  object-fit: contain !important;
-  display: block !important;
-}
+  .logo.logo-image{
+    width: 220px !important;
+    height: auto !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+  }
+
+  .logo.logo-image img{
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+  }
+  
   footer .logo.logo-image,
   .footer-logo{
     width: 245px !important;
@@ -230,7 +247,7 @@ body, h1, h2, h3, h4, h5, h6, p, a, button, li {
 <body>
 <header class="topbar">
     <div class="wrap nav">
-      <a class="brand" href="index.html#home"><div class="logo logo-image"><img src="assets/logo-alta-formazione-funeraria.png" alt="Alta Formazione Funeraria"></div></a>
+      <a class="brand" href="index.html#home"><div class="logo logo-image"><img src="assets/logo-alta-formazione-funeraria.svg" alt="Alta Formazione Funeraria"> alt="Alta Formazione Funeraria"></div></a>
       <nav class="menu" aria-label="Navigazione principale"><a href="index.html#home">Home</a><a class="active" href="index.html#corsi">I corsi</a><a href="index.html#programma">Programma</a><a href="index.html#formazione">Formazione aziendale</a><a href="index.html#chi-siamo">Chi siamo</a><a href="index.html#partner">Partner</a><a href="index.html#contatti">Contatti</a><a class="shop-link" href="./carrello.html">Carrello <span class="shop-count" data-cart-count>0</span></a><a class="btn dark" href="index.html#contatti">Richiedi informazioni</a></nav>
       <div class="mobile-toggle">☰</div>
     </div>
