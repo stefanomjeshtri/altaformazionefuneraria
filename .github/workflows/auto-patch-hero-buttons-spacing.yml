@@ -1,0 +1,62 @@
+name: Auto patch hero buttons spacing
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch index hero buttons
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          block = '''  .hero-actions{
+    margin-top: 18px !important;
+    margin-left: 28px !important;
+  }
+
+  @media(max-width:620px){
+    .hero-actions{
+      margin-left: 0 !important;
+      margin-top: 18px !important;
+    }
+  }
+'''
+
+          # Remove earlier attempted hero-actions override if present
+          html = re.sub(r'  \.hero-actions\{\n    margin-top: 14px !important;\n    padding-left: 12px !important;\n  \}\n\n  @media\(max-width:620px\)\{\n    \.hero-actions\{\n      padding-left: 0 !important;\n      margin-top: 16px !important;\n    \}\n  \}\n', '', html)
+
+          # Add the final override once, near the end of head styles
+          if 'margin-left: 28px !important;' not in html:
+              marker = '</style>\n\n</head>'
+              html = html.replace(marker, block + marker, 1)
+
+          path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Commit real patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Move hero buttons away from margin"
+            git push
+          fi
