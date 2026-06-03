@@ -1,0 +1,153 @@
+name: Sync course page logos
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply SVG logo to course pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          pages = [
+              'tanatoestetica-1.html',
+              'tanatoestetica-2.html',
+              'tanatoestetica-3.html',
+              'cerimoniere-1.html',
+              'cerimoniere-2.html',
+              'riti-lutto.html',
+              'comunicazione-efficace.html',
+              'carrello.html',
+          ]
+
+          logo_style = '''<style>
+  /* Logo ufficiale - coerente con la home */
+  .topbar{
+    background: rgba(3,21,37,.98) !important;
+  }
+
+  .nav{
+    min-height: 118px !important;
+    height: auto !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .brand{
+    gap: 0 !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .brand small{
+    display: none !important;
+  }
+
+  .logo.logo-image{
+    width: 100px !important;
+    height: auto !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+    letter-spacing: 0 !important;
+  }
+
+  .logo.logo-image img{
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+  }
+
+  footer .logo.logo-image,
+  .footer-logo{
+    width: 245px !important;
+    height: 112px !important;
+    margin-bottom: 16px !important;
+  }
+
+  @media(max-width:980px){
+    .nav{
+      min-height: 100px !important;
+    }
+
+    .logo.logo-image{
+      width: 85px !important;
+      height: auto !important;
+    }
+  }
+
+  @media(max-width:620px){
+    .nav{
+      min-height: 84px !important;
+    }
+
+    .logo.logo-image{
+      width: 65px !important;
+      height: auto !important;
+      padding: 0 !important;
+    }
+  }
+</style>'''
+
+          for name in pages:
+              path = Path(name)
+              if not path.exists():
+                  print(f'Skip missing {name}')
+                  continue
+              html = path.read_text(encoding='utf-8')
+
+              html = re.sub(
+                  r'<a class="brand" href="index\.html#home"><div class="logo logo-image"><img[^>]*></div></a>',
+                  '<a class="brand" href="index.html#home"><div class="logo logo-image"><img src="assets/logo-alta-formazione-funeraria.svg" alt="Alta Formazione Funeraria"></div></a>',
+                  html,
+                  count=1
+              )
+
+              html = html.replace('assets/logo-alta-formazione-funeraria.png', 'assets/logo-alta-formazione-funeraria.svg')
+
+              html2 = re.sub(
+                  r'<style>\s*/\* Logo ufficiale - inserito senza alterare contenuti home/corsi \*/.*?</style>',
+                  logo_style,
+                  html,
+                  count=1,
+                  flags=re.S
+              )
+              if html2 == html and 'Logo ufficiale - coerente con la home' not in html:
+                  html2 = html.replace('</head>', logo_style + '\n\n</head>', 1)
+
+              path.write_text(html2, encoding='utf-8')
+              print(f'Updated {name}')
+          PY
+
+      - name: Commit course logo sync
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add *.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Sync SVG logo across course pages"
+            git push
+          fi
